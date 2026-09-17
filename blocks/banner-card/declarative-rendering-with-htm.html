@@ -1,0 +1,407 @@
+<title>The banner-card Rewrite</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#f5f6f3;
+    --paper-raised:#ffffff;
+    --ink:#171b1f;
+    --ink-soft:#4b535a;
+    --ink-faint:#7c848b;
+    --line:rgba(23,27,31,.13);
+    --declarative:#0e8f7d;
+    --declarative-soft:#e2f3ef;
+    --imperative:#b5551a;
+    --imperative-soft:#faead9;
+    --warn:#9c2b2b;
+    --warn-soft:#f8e6e4;
+    --code-bg:#161b22;
+    --code-ink:#e6edf3;
+    --code-muted:#8b98a5;
+    --code-line-declarative:rgba(14,143,125,.22);
+    --code-line-imperative:rgba(181,85,26,.22);
+    --font-display:"Newsreader",Georgia,"Times New Roman",serif;
+    --font-body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+    --font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#11151a;
+      --paper-raised:#181d23;
+      --ink:#edf1f3;
+      --ink-soft:#b6c0c7;
+      --ink-faint:#818b93;
+      --line:rgba(237,241,243,.14);
+      --declarative:#52d6c0;
+      --declarative-soft:rgba(82,214,192,.12);
+      --imperative:#f2a06a;
+      --imperative-soft:rgba(242,160,106,.12);
+      --warn:#e58585;
+      --warn-soft:rgba(229,133,133,.12);
+      --code-bg:#0b0e12;
+      --code-ink:#e6edf3;
+      --code-muted:#7c8792;
+      --code-line-declarative:rgba(82,214,192,.16);
+      --code-line-imperative:rgba(242,160,106,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#11151a;
+    --paper-raised:#181d23;
+    --ink:#edf1f3;
+    --ink-soft:#b6c0c7;
+    --ink-faint:#818b93;
+    --line:rgba(237,241,243,.14);
+    --declarative:#52d6c0;
+    --declarative-soft:rgba(82,214,192,.12);
+    --imperative:#f2a06a;
+    --imperative-soft:rgba(242,160,106,.12);
+    --warn:#e58585;
+    --warn-soft:rgba(229,133,133,.12);
+    --code-bg:#0b0e12;
+    --code-ink:#e6edf3;
+    --code-muted:#7c8792;
+    --code-line-declarative:rgba(82,214,192,.16);
+    --code-line-imperative:rgba(242,160,106,.16);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    padding-inline:20px;
+  }
+  a{color:var(--declarative);}
+  h1,h2,h3{font-family:var(--font-display);font-weight:600;text-wrap:balance;letter-spacing:-0.01em;color:var(--ink);}
+  code,pre,kbd{font-family:var(--font-mono);}
+  .wrap{max-width:800px;margin:0 auto;}
+  .wrap-wide{max-width:1040px;margin:0 auto;}
+
+  header.hero{padding-block:56px 28px;border-bottom:1px solid var(--line);}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--font-mono);font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:14px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--declarative);}
+  h1.title{font-size:clamp(2rem,4.4vw,2.9rem);margin:0 0 14px;}
+  p.dek{font-size:1.14rem;color:var(--ink-soft);max-width:64ch;margin:0 0 22px;}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:.85rem;color:var(--ink-faint);font-family:var(--font-mono);}
+  .meta b{color:var(--ink-soft);font-weight:500;}
+
+  nav.toc{
+    display:flex;flex-wrap:wrap;gap:8px;
+    padding-block:18px;border-bottom:1px solid var(--line);
+    position:sticky;top:env(safe-area-inset-top,0px);
+    background:color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter:blur(6px);
+    z-index:5;
+  }
+  nav.toc a{
+    font-family:var(--font-mono);font-size:.78rem;color:var(--ink-soft);
+    text-decoration:none;border:1px solid var(--line);padding:6px 12px;border-radius:100px;
+    white-space:nowrap;
+  }
+  nav.toc a:hover{border-color:var(--declarative);color:var(--declarative);}
+
+  section{padding-block:44px;border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  .section-label{
+    font-family:var(--font-mono);font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink-faint);margin:0 0 10px;
+  }
+  h2{font-size:1.7rem;margin:0 0 16px;}
+  h3{font-size:1.18rem;margin:28px 0 10px;}
+  p{margin:0 0 16px;max-width:70ch;}
+  ul,ol{margin:0 0 16px;padding-left:1.3em;}
+  li{margin-bottom:8px;max-width:66ch;}
+  strong{color:var(--ink);}
+  .lede{font-size:1.08rem;color:var(--ink-soft);max-width:66ch;}
+
+  .callout{
+    border:1px solid var(--line);border-left:3px solid var(--ink-faint);
+    background:var(--paper-raised);border-radius:6px;
+    padding:16px 20px;margin:18px 0;
+  }
+  .callout p:last-child{margin-bottom:0;}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-soft);}
+  .callout.note{border-left-color:var(--ink-faint);}
+  .callout-title{
+    font-family:var(--font-mono);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;
+    font-weight:600;margin-bottom:8px;display:block;color:var(--ink-soft);
+  }
+
+  .tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--font-mono);font-size:.74rem;font-weight:500;
+    padding:4px 10px;border-radius:100px;margin-bottom:14px;
+  }
+  .tag.declarative{background:var(--declarative-soft);color:var(--declarative);}
+  .tag.imperative{background:var(--imperative-soft);color:var(--imperative);}
+  .tag.live::after{content:"proposal — shipping now";margin-left:6px;font-size:.66rem;opacity:.75;border-left:1px solid currentColor;padding-left:6px;}
+  .tag.ref::after{content:"Adobe EDS standard — reference only";margin-left:6px;font-size:.66rem;opacity:.75;border-left:1px solid currentColor;padding-left:6px;}
+  .tag .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+  .code-panel{
+    background:var(--code-bg);color:var(--code-ink);
+    border-radius:8px;overflow:hidden;margin:14px 0 22px;
+    border:1px solid var(--line);
+  }
+  .code-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 16px;border-bottom:1px solid rgba(255,255,255,.08);
+    font-family:var(--font-mono);font-size:.76rem;color:var(--code-muted);
+  }
+  .code-head .file{color:var(--code-ink);}
+  .code-scroll{overflow-x:auto;}
+  pre.code{margin:0;padding:16px 18px;font-size:.85rem;line-height:1.65;white-space:pre;}
+  pre.code .hl-d{display:inline-block;width:100%;background:var(--code-line-declarative);}
+  pre.code .hl-i{display:inline-block;width:100%;background:var(--code-line-imperative);}
+  .cm{color:var(--code-muted);font-style:italic;}
+
+  .side-by-side{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  @media (max-width:760px){.side-by-side{grid-template-columns:1fr;}}
+
+  .stat-row{display:flex;flex-wrap:wrap;gap:14px;margin:22px 0 6px;}
+  .stat{
+    background:var(--paper-raised);border:1px solid var(--line);border-radius:8px;
+    padding:14px 18px;flex:1 1 160px;
+  }
+  .stat .n{font-family:var(--font-display);font-size:1.9rem;font-weight:600;line-height:1;}
+  .stat .n.declarative{color:var(--declarative);}
+  .stat .n.imperative{color:var(--imperative);}
+  .stat .l{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase;margin-top:6px;}
+
+  .table-scroll{overflow-x:auto;margin:14px 0 22px;}
+  table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:520px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  thead th{
+    font-family:var(--font-mono);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--ink-faint);font-weight:500;border-bottom:1px solid var(--ink-faint);
+  }
+  td code, li code, p code{
+    font-size:.86em;background:var(--paper-raised);border:1px solid var(--line);
+    padding:1px 6px;border-radius:4px;
+  }
+  .col-declarative{border-left:2px solid var(--declarative);}
+  .col-imperative{border-left:2px solid var(--imperative);}
+  .yes{color:var(--declarative);font-weight:600;}
+  .no{color:var(--imperative);font-weight:600;}
+
+  .rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;}
+  @media (max-width:760px){.rec-grid{grid-template-columns:1fr;}}
+  .rec-card{background:var(--paper-raised);border:1px solid var(--line);border-radius:8px;padding:18px 20px;}
+  .rec-card h3{margin-top:0;font-size:1.02rem;}
+
+  footer{padding-block:36px 56px;}
+  footer p{color:var(--ink-faint);font-size:.85rem;}
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><span class="dot"></span>Storefront blocks &middot; pattern proposal</div>
+    <h1 class="title">The <code>banner-card</code> rewrite</h1>
+    <p class="dek">Same block, same config, same markup and CSS classes &mdash; two ways to build it. <code>banner-card.imperative.js</code> follows Adobe's standard pattern for EDS block development (<code>createElement</code>, no build step, codified in this project's own AGENTS.md). <code>banner-card.js</code> is the proposal on the table: the same block, rendered declaratively via <code>htm</code> + Preact. Isolating the block lets the comparison land entirely on the rendering change itself.</p>
+    <div class="meta">
+      <span><b>Comparing:</b> Adobe EDS standard (imperative) vs. htm/Preact proposal</span>
+      <span><b>Scope:</b> storefront / EDS blocks</span>
+      <span><b>Updated:</b> 2026-09-17</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#glance">At a glance</a>
+  <a href="#cost-per-concern">Cost per concern</a>
+  <a href="#comparison">Comparison</a>
+  <a href="#benefits">Benefits of the change</a>
+  <a href="#performance">Performance</a>
+  <a href="#cognitive-load">Cognitive load</a>
+</nav>
+
+<main>
+
+<section id="glance">
+  <div class="wrap-wide">
+    <p class="section-label">01 &middot; The two files</p>
+    <h2>One block, two decorators</h2>
+    <p class="lede">Both read the same four config values with <code>readBlockConfig</code> and produce the exact same DOM: a <code>.banner-card-component</code> wrapper, an image, a title, a description, and a &ldquo;Learn More&rdquo; link. <code>banner-card.css</code> is untouched by either. The only variable is <em>how</em> the markup gets built.</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="n declarative">13</div><div class="l">lines to describe the markup &middot; proposal</div></div>
+      <div class="stat"><div class="n imperative">21</div><div class="l">lines to build the same markup &middot; Adobe standard</div></div>
+      <div class="stat"><div class="n declarative">38%</div><div class="l">fewer lines in the proposal</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">CSS or output differences between them</div></div>
+    </div>
+
+    <div class="side-by-side">
+      <div>
+        <span class="tag declarative live"><span class="dot"></span>banner-card.js</span>
+        <div class="code-panel">
+          <div class="code-head"><span class="file">banner-card.js</span><span>htm + Preact</span></div>
+          <div class="code-scroll"><pre class="code">const html = htm.bind(h);
+
+<span class="hl-d">const BannerCard = ({
+  image, title, description, link,
+}) =&gt; html`&lt;div class="banner-card-component"&gt;
+    &lt;div class="banner-card-image"&gt;
+      &lt;img src=${'$'}{image} alt=${'$'}{title} /&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;h1 class="banner-card-title"&gt;${'$'}{title}&lt;/h1&gt;
+      &lt;p class="banner-card-description"&gt;${'$'}{description}&lt;/p&gt;
+      &lt;a href=${'$'}{link} class="banner-card-link"&gt;Learn More&lt;/a&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;`;</span>
+
+export default async function decorate(block) {
+  const { image, title, description, link } = readBlockConfig(block);
+  <span class="hl-d">render(html`&lt;${'$'}{BannerCard}
+    image=${'$'}{image} title=${'$'}{title}
+    description=${'$'}{description} link=${'$'}{link} /&gt;`</span>, block);
+}</pre></div>
+        </div>
+      </div>
+
+      <div>
+        <span class="tag imperative ref"><span class="dot"></span>banner-card.imperative.js</span>
+        <div class="code-panel">
+          <div class="code-head"><span class="file">banner-card.imperative.js</span><span>createElement, no build step</span></div>
+          <div class="code-scroll"><pre class="code">export default async function decorate(block) {
+  const { image, title, description, link } = readBlockConfig(block);
+
+  <span class="hl-i">const card = document.createElement('div');
+  card.className = 'banner-card-component';
+
+  const imageWrapper = document.createElement('div');
+  imageWrapper.className = 'banner-card-image';
+  const img = document.createElement('img');
+  img.src = image;
+  img.alt = title;
+  imageWrapper.append(img);
+
+  const content = document.createElement('div');
+
+  const heading = document.createElement('h1');
+  heading.className = 'banner-card-title';
+  heading.textContent = title;
+
+  const paragraph = document.createElement('p');
+  paragraph.className = 'banner-card-description';
+  paragraph.textContent = description;
+
+  const cta = document.createElement('a');
+  cta.href = link;
+  cta.className = 'banner-card-link';
+  cta.textContent = 'Learn More';
+
+  content.append(heading, paragraph, cta);
+  card.append(imageWrapper, content);</span>
+
+  block.innerHTML = '';
+  block.append(card);
+}</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout note">
+      <span class="callout-title">Which one actually ships</span>
+      <p><code>banner-card.js</code> &mdash; the htm/Preact proposal &mdash; is the decorator currently loaded by the block framework. <code>banner-card.imperative.js</code> reproduces Adobe's standard EDS block pattern for comparison; it isn't wired up anywhere. It was written specifically to give the proposal a fair, apples-to-apples baseline instead of contrasting <code>banner-card</code> against a structurally different block.</p>
+    </div>
+
+    <div class="callout note">
+      <span class="callout-title">This is the easy case</span>
+      <p><code>banner-card</code> is a deliberately basic example: four fixed fields, no conditionals, no lists, no nested components. The 38% gap measured here is a floor, not a ceiling &mdash; as a component picks up more fields, conditional rendering, or child components, each addition costs the proposal roughly one line and the standard pattern three to four, so the gap widens with the component's complexity, not just its size.</p>
+    </div>
+  </div>
+</section>
+
+<section id="cost-per-concern">
+  <div class="wrap-wide">
+    <p class="section-label">02 &middot; Where the extra lines go</p>
+    <h2>Cost per concern</h2>
+    <p>Every visual piece of the card costs one line declaratively and several imperatively &mdash; not because the imperative version is doing anything extra, but because &ldquo;create,&rdquo; &ldquo;configure,&rdquo; and &ldquo;attach&rdquo; are three separate statements instead of one expression.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Concern</th><th class="col-declarative">Proposal (htm)</th><th class="col-imperative">Adobe standard</th></tr></thead>
+        <tbody>
+          <tr><td>Wrapper + class</td><td><code>&lt;div class="banner-card-component"&gt;</code></td><td><code>createElement</code> + <code>.className =</code> (2 lines)</td></tr>
+          <tr><td>Image</td><td><code>&lt;img src=${'$'}{image} alt=${'$'}{title} /&gt;</code></td><td><code>createElement</code> + <code>.src</code> + <code>.alt</code> + <code>.append</code> (4 lines)</td></tr>
+          <tr><td>Title</td><td><code>&lt;h1 class="..."&gt;${'$'}{title}&lt;/h1&gt;</code></td><td><code>createElement</code> + <code>.className</code> + <code>.textContent</code> (3 lines)</td></tr>
+          <tr><td>Description</td><td><code>&lt;p class="..."&gt;${'$'}{description}&lt;/p&gt;</code></td><td><code>createElement</code> + <code>.className</code> + <code>.textContent</code> (3 lines)</td></tr>
+          <tr><td>Link</td><td><code>&lt;a href=${'$'}{link} class="..."&gt;Learn More&lt;/a&gt;</code></td><td><code>createElement</code> + <code>.href</code> + <code>.className</code> + <code>.textContent</code> (4 lines)</td></tr>
+          <tr><td>Assembly</td><td>Implicit &mdash; nesting <em>is</em> assembly</td><td>2 explicit <code>.append(...)</code> calls to wire the tree back together</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Nothing here is hard to write once, imperatively. What accumulates is the ratio: one line of intent (&ldquo;this is an image with this src and alt&rdquo;) becomes three to four lines of instructions, and every one of those lines is a place a step can be forgotten &mdash; skip the <code>.append</code>, and the element is created but silently never shows up.</p>
+  </div>
+</section>
+
+<section id="comparison">
+  <div class="wrap-wide">
+    <p class="section-label">03 &middot; Side by side</p>
+    <h2>Comparison</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Aspect</th><th class="col-declarative">banner-card.js &middot; proposal</th><th class="col-imperative">banner-card.imperative.js &middot; Adobe standard</th></tr></thead>
+        <tbody>
+          <tr><td>Output</td><td colspan="2">Identical DOM, identical classes, identical CSS</td></tr>
+          <tr><td>Lines to express the card</td><td>13</td><td>21</td></tr>
+          <tr><td>Markup visibility</td><td>Template mirrors the final DOM 1:1</td><td>Shape emerges from a sequence of statements</td></tr>
+          <tr><td>Failure mode for a missed step</td><td>N/A &mdash; nesting can't be &ldquo;forgotten&rdquo;</td><td>A missed <code>.append()</code> silently drops an element</td></tr>
+          <tr><td>Runtime dependency</td><td><code>htm</code> (unpinned, from unpkg.com) + Preact's <code>h</code>/<code>render</code></td><td>None beyond the platform DOM API</td></tr>
+          <tr><td>Static analysis</td><td>Template contents aren't checked by ESLint</td><td>Every call is a real, lintable DOM API call</td></tr>
+          <tr><td>Matches AGENTS.md hard rules</td><td><span class="no">No</span> &mdash; violates &ldquo;no template literals for DOM&rdquo; / &ldquo;no VNode or Preact for new UI&rdquo;</td><td><span class="yes">Yes</span> &mdash; this is the pattern those rules describe</td></tr>
+          <tr><td>Currently shipping</td><td><span class="yes">Yes</span> (as the proposal, not yet formally adopted)</td><td><span class="no">No</span> &mdash; reference baseline only</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="benefits">
+  <div class="wrap">
+    <p class="section-label">04 &middot; What the proposal buys over the standard, specifically here</p>
+    <h2>Benefits of the change</h2>
+    <ul>
+      <li><strong>38% fewer lines for the same output.</strong> 13 vs. 21 for a block this size &mdash; and the gap widens as more fields or conditional rows get added, since each one costs 1 declarative line but 3&ndash;4 imperative ones.</li>
+      <li><strong>No assembly step to get wrong.</strong> Nesting in the template <em>is</em> the tree; the imperative version needs two explicit <code>.append()</code> calls, and forgetting one fails silently &mdash; the element exists, it's just not attached anywhere.</li>
+      <li><strong>Props and markup stay next to each other.</strong> <code>src=${'$'}{image} alt=${'$'}{title}</code> sits on one line; the imperative version separates &ldquo;create the img&rdquo; from &ldquo;set its src&rdquo; from &ldquo;set its alt&rdquo; from &ldquo;attach it,&rdquo; four statements a reader has to mentally re-group.</li>
+      <li><strong>The component is reusable as a unit.</strong> <code>BannerCard</code> is a function that can be composed (<code>&lt;${'$'}{BannerCard} /&gt;</code>) inside a larger template later; the imperative version is a block of statements with no natural seam to lift out and reuse elsewhere without also extracting its exact append order.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="performance">
+  <div class="wrap">
+    <p class="section-label">05 &middot; Performance impact</p>
+    <h2>None worth measuring, for this block</h2>
+    <p>Because both versions now solve the identical, fixed-shape problem, this is as close to a controlled comparison as it gets &mdash; and it confirms there's no performance case either way here.</p>
+    <p><code>decorate()</code> runs once per block instance, with no re-renders to amortize. The proposal pays for a small vnode tree and a single Preact reconciliation over five static elements; the Adobe-standard version pays for five direct <code>createElement</code> calls with no intermediate representation. Both costs are on the order of microseconds for a block this size &mdash; not a difference a user or a Lighthouse run will register.</p>
+    <p>The one asymmetry that <em>would</em> show up in a network panel is unrelated to either rendering style: <code>banner-card.js</code> fetches <code>htm</code> from <code>unpkg.com</code> at runtime, an extra third-party origin the standard pattern doesn't need. That cost is fixed by pinning <code>htm</code> as a normal dependency, not by rejecting the proposal.</p>
+  </div>
+</section>
+
+<section id="cognitive-load">
+  <div class="wrap">
+    <p class="section-label">06 &middot; Cognitive complexity</p>
+    <h2>For a regular shape, the standard pattern buys nothing back</h2>
+    <p>Reading <code>BannerCard</code> in the proposal, the shape of the code and the shape of the output are the same shape: given these four props, this markup comes out. There's one thing to hold in your head.</p>
+    <p>Reading <code>banner-card.imperative.js</code> &mdash; Adobe's standard EDS pattern &mdash; the same information is spread across 21 sequential statements &mdash; create, configure, append, repeat &mdash; and reconstructing &ldquo;what does this render&rdquo; means mentally replaying the sequence rather than reading a shape. That's the tax the imperative standard always carries, but here it's paid for nothing: there's no conditional structure, no dynamic column count, no cell-spanning logic the proposal couldn't express just as well. When the two implementations produce byte-identical output, the extra sequencing is pure overhead, not the price of handling something the template genuinely can't.</p>
+    <p>That's the honest boundary of this result: it holds for blocks shaped like <code>banner-card</code> &mdash; fixed fields, no conditional structure. Elsewhere in this codebase (a comparison table with a data-driven column count and manual cell spanning, for instance) the same trade tips the other way, because there the imperative standard isn't paying for nothing &mdash; it's paying for control the proposal doesn't have a clean way to express.</p>
+  </div>
+</section>
+
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Sources: <code>blocks/banner-card/banner-card.js</code>, <code>blocks/banner-card/banner-card.imperative.js</code>, <code>blocks/banner-card/README.md</code>, <code>AGENTS.md</code> (Universal Constraints / Hard Rules). Line counts refer to each file's current state at the time of writing.</p>
+  </div>
+</footer>
