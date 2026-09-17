@@ -1,0 +1,41 @@
+.banner-card-component {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-small);
+  max-width: 100%;
+  padding: var(--spacing-medium);
+  border: var(--shape-border-width-1) solid var(--color-neutral-500);
+}
+
+.banner-card-component .banner-card-image picture {
+  display: block;
+  max-width: 50%;
+}
+
+.banner-card-component .banner-card-image img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.banner-card-component .banner-card-title {
+  font-weight: bold;
+  font-size: 3.5em;
+}
+
+.banner-card-component .banner-card-description {
+  color: var(--color-neutral-700);
+}
+
+.banner-card-component .banner-card-link {
+  margin: var(--spacing-small) 0;
+  background-color: var(--color-brand-500);
+  color: var(--color-neutral-100);
+  padding: 10px 20px;
+  
+  &:hover {
+    opacity: .8;
+    text-decoration: none;
+    color: var(--color-neutral-100);
+  }
+}

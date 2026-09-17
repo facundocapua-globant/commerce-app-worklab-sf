@@ -94,6 +94,43 @@
           }
         },
         {
+          "title": "Banner Card",
+          "id": "banner-card",
+          "model": "banner-card",
+          "plugins": {
+            "da": {
+              "rows": 4,
+              "columns": 1,
+              "fields": [
+                {
+                  "name": "image",
+                  "selector": "div:nth-child(1)>div>picture>img[src]"
+                },
+                {
+                  "name": "imageAlt",
+                  "selector": "div:nth-child(1)>div>picture>img[alt]"
+                },
+                {
+                  "name": "title",
+                  "selector": "div:nth-child(2)>div"
+                },
+                {
+                  "name": "description",
+                  "selector": "div:nth-child(3)>div"
+                },
+                {
+                  "name": "linkHref",
+                  "selector": "div:nth-child(4)>div>a[href]"
+                },
+                {
+                  "name": "linkText",
+                  "selector": "div:nth-child(4)>div>a"
+                }
+              ]
+            }
+          }
+        },
+        {
           "title": "Cards",
           "id": "cards",
           "model": "cards",

@@ -10,6 +10,7 @@
     "components": [
       "hero",
       "accordion",
+      "banner-card",
       "cards",
       "carousel",
       "columns",
